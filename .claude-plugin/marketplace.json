@@ -1,0 +1,16 @@
+{
+  "name": "rekah-plugins",
+  "owner": {
+    "name": "Haker"
+  },
+  "metadata": {
+    "description": "Rekah 개발 도구 플러그인 마켓플레이스"
+  },
+  "plugins": [
+    {
+      "name": "rekah-unreal",
+      "source": "./plugins/rekah-unreal",
+      "description": "Unreal Engine 개발을 위한 Claude Code 플러그인"
+    }
+  ]
+}
