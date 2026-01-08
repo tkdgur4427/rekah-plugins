@@ -11,11 +11,6 @@
       "name": "rekah-unreal",
       "source": "./plugins/rekah-unreal",
       "description": "Unreal Engine 개발을 위한 Claude Code 플러그인"
-    },
-    {
-      "name": "ralph-loop-test",
-      "source": "https://github.com/anthropics/claude-plugins-official.git#plugins/ralph-loop",
-      "description": "[TEST] ralph-loop 외부 참조 테스트"
     }
   ]
 }
