@@ -1,9 +1,11 @@
 # Unreal Engine 빌드 가이드
 
+> **중요**: 모든 명령은 PowerShell 기반입니다. bash 환경에서는 `powershell -NoProfile -Command "..."` 형식으로 실행하세요.
+
 ## 빌드 명령 형식
 
-```
-Engine\Build\BatchFiles\Build.bat <TargetName> <Platform> <Config> -project="<ProjectPath>" -WaitMutex
+```powershell
+& "<EngineRoot>\Engine\Build\BatchFiles\Build.bat" <TargetName> <Platform> <Config> -project="<ProjectPath>" -WaitMutex
 ```
 
 ## 인자 설명
@@ -24,39 +26,16 @@ Engine\Build\BatchFiles\Build.bat <TargetName> <Platform> <Config> -project="<Pr
 | Game | `<ProjectName>` | PracticeGame0 |
 | Server | `<ProjectName>Server` | PracticeGame0Server |
 
-## 빌드 예시
-
-### 에디터 빌드 (Development)
-
-```bash
-Engine\Build\BatchFiles\Build.bat PracticeGame0Editor Win64 Development -project="D:/BttUnrealEngine/Games/PracticeGame0/PracticeGame0.uproject" -WaitMutex
-```
-
-### 게임 빌드 (Shipping)
-
-```bash
-Engine\Build\BatchFiles\Build.bat PracticeGame0 Win64 Shipping -project="D:/BttUnrealEngine/Games/PracticeGame0/PracticeGame0.uproject" -WaitMutex
-```
-
-### 서버 빌드 (Development)
-
-```bash
-Engine\Build\BatchFiles\Build.bat PracticeGame0Server Win64 Development -project="D:/BttUnrealEngine/Games/PracticeGame0/PracticeGame0.uproject" -WaitMutex
-```
-
 ## 빌드 실행 순서
 
 ### 1. 프로젝트 탐색
 
 ```bash
-# .uproject 파일 찾기 (Windows)
-dir /s /b *.uproject | findstr /r "^.*\.uproject$"
+# PowerShell로 .uproject 파일 찾기
+powershell -NoProfile -Command "Get-ChildItem -Path . -Filter '*.uproject' -Recurse | Select-Object -First 1 -ExpandProperty FullName"
 
-# .uproject 파일 찾기 (bash)
-find . -maxdepth 3 -name "*.uproject" 2>/dev/null | head -1
-
-# Engine 루트 확인
-ls Engine/Build/BatchFiles/Build.bat
+# Build.bat 존재 확인
+powershell -NoProfile -Command "Test-Path 'Engine\Build\BatchFiles\Build.bat'"
 ```
 
 ### 2. 프로젝트 이름 추출
@@ -74,7 +53,27 @@ ls Engine/Build/BatchFiles/Build.bat
 ### 4. 빌드 실행
 
 ```bash
-Engine\Build\BatchFiles\Build.bat <TargetName> Win64 Development -project="<ProjectPath>" -WaitMutex
+powershell -NoProfile -Command "& '<EngineRoot>\Engine\Build\BatchFiles\Build.bat' <TargetName> Win64 Development -project='<ProjectPath>' -WaitMutex"
+```
+
+## 빌드 예시
+
+### 에디터 빌드 (Development)
+
+```bash
+powershell -NoProfile -Command "& 'D:\BttUnrealEngine\Engine\Build\BatchFiles\Build.bat' PracticeGame0Editor Win64 Development -project='D:\BttUnrealEngine\Games\PracticeGame0\PracticeGame0.uproject' -WaitMutex"
+```
+
+### 게임 빌드 (Shipping)
+
+```bash
+powershell -NoProfile -Command "& 'D:\BttUnrealEngine\Engine\Build\BatchFiles\Build.bat' PracticeGame0 Win64 Shipping -project='D:\BttUnrealEngine\Games\PracticeGame0\PracticeGame0.uproject' -WaitMutex"
+```
+
+### 서버 빌드 (Development)
+
+```bash
+powershell -NoProfile -Command "& 'D:\BttUnrealEngine\Engine\Build\BatchFiles\Build.bat' PracticeGame0Server Win64 Development -project='D:\BttUnrealEngine\Games\PracticeGame0\PracticeGame0.uproject' -WaitMutex"
 ```
 
 ## 빌드 결과 처리
