@@ -1,11 +1,12 @@
 {
   "name": "rekah-unreal",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Unreal Engine 개발을 위한 Claude Code 플러그인",
   "author": {
     "name": "Haker"
   },
   "repository": "https://github.com/tkdgur4427/rekah-plugins",
+  "agents": "./agents/",
   "mcpServers": {
     "rekah-unreal": {
       "command": "uvx",

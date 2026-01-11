@@ -13,7 +13,7 @@ allowed-tools:
 
 # Unreal Run Skill
 
-실행 관련 작업을 독립 컨텍스트에서 실행합니다.
+실행 관련 작업을 `unreal-run-agent`에 위임합니다.
 
 ## 활성화 키워드
 
@@ -22,26 +22,18 @@ allowed-tools:
 - PIE, Play In Editor, 게임 실행
 - 쿠킹, cooking, 패키징, packaging
 
-## 에디터 실행
+## 동작
 
-사용자가 "에디터 실행해줘", "에디터 열어줘" 등을 요청하면:
-→ 에디터 실행 명령 수행
+1. 스킬 활성화 시 `unreal-run-agent` 호출
+2. 에이전트가 실행 명령 수행
+3. 결과 요약 반환
 
-상세: [EDITOR.md](./EDITOR.md)
+## 지원 기능
 
-## 커맨드렛 실행
-
-사용자가 특정 커맨드렛 실행을 요청하면:
-→ 커맨드렛 명령 수행
-
-상세: [COMMANDLET.md](./COMMANDLET.md)
-
-## PIE 실행
-
-사용자가 "게임 테스트해줘", "PIE 실행해줘" 등을 요청하면:
-→ PIE 모드로 에디터 실행
-
-## 쿠킹/패키징
-
-사용자가 "쿠킹해줘", "패키징해줘" 등을 요청하면:
-→ 쿠킹 또는 패키징 명령 수행
+| 기능 | 설명 |
+|------|------|
+| 에디터 실행 | UnrealEditor.exe 실행 |
+| PIE | Play In Editor 모드 |
+| 커맨드렛 | UnrealEditor-Cmd.exe -run= |
+| 쿠킹 | 콘텐츠 쿠킹 |
+| 패키징 | UAT BuildCookRun |
