@@ -11,5 +11,18 @@
       "command": "uvx",
       "args": ["--from", "git+https://github.com/tkdgur4427/rekah-unreal-mcp.git", "rekah-mcp"]
     }
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/session-start.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
   }
 }
