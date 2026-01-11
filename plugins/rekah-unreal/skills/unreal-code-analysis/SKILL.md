@@ -28,10 +28,11 @@ LSP 기반 코드 분석을 독립 컨텍스트에서 실행합니다.
 
 `compile_commands.json`이 없는 경우 UnrealBuildTool로 생성:
 
-```bash
-dotnet Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.dll ^
-  -mode=GenerateClangDatabase ^
-  -project="D:/BttUnrealEngine/Games/PracticeGame0/PracticeGame0.uproject" ^
+```powershell
+# PowerShell
+dotnet Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.dll `
+  -mode=GenerateClangDatabase `
+  -project="D:/BttUnrealEngine/Games/PracticeGame0/PracticeGame0.uproject" `
   PracticeGame0Editor Win64 Development
 ```
 

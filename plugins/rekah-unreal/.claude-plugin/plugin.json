@@ -1,6 +1,6 @@
 {
   "name": "rekah-unreal",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Unreal Engine 개발을 위한 Claude Code 플러그인",
   "author": {
     "name": "Haker"

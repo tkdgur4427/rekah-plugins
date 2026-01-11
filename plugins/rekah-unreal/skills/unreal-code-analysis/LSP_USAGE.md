@@ -8,28 +8,26 @@ Unreal Engine C++ 코드 분석 시 grep 대신 clangd LSP를 활용하면 정�
 
 ### 1. clangd 설치
 
-```bash
+```powershell
 # 설치 확인
 clangd --version
 
 # Windows (Chocolatey)
 choco install llvm
 
-# Mac
-brew install llvm
-
-# Linux
-sudo apt install clangd
+# Windows (winget)
+winget install LLVM.LLVM
 ```
 
 ### 2. compile_commands.json 생성
 
 UnrealBuildTool을 사용하여 생성:
 
-```bash
-dotnet Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.dll ^
-  -mode=GenerateClangDatabase ^
-  -project="D:/BttUnrealEngine/Games/PracticeGame0/PracticeGame0.uproject" ^
+```powershell
+# PowerShell
+dotnet Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.dll `
+  -mode=GenerateClangDatabase `
+  -project="D:/BttUnrealEngine/Games/PracticeGame0/PracticeGame0.uproject" `
   PracticeGame0Editor Win64 Development
 ```
 
@@ -157,17 +155,17 @@ Unreal Engine처럼 대규모 프로젝트에서는:
 
 ### compile_commands.json 오류
 
-```bash
+```powershell
 # 파일 존재 확인
-ls compile_commands.json
+Test-Path compile_commands.json
 
-# 내용 확인 (첫 몇 줄)
-head -20 compile_commands.json
+# 파일 크기 확인
+(Get-Item compile_commands.json).Length / 1MB
 ```
 
 ### clangd 연결 실패
 
-```bash
+```powershell
 # clangd 버전 확인
 clangd --version
 

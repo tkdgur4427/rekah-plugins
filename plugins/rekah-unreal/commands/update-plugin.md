@@ -21,7 +21,7 @@ Git 기반 마켓플레이스 플러그인의 2중 캐시 문제를 해결하기
 
 ### Step 1: 마켓플레이스 업데이트 (Git Pull)
 
-```bash
+```
 claude plugin marketplace update rekah-plugins
 ```
 
@@ -29,14 +29,14 @@ claude plugin marketplace update rekah-plugins
 
 ### Step 2: 플러그인 재설치 (캐시 갱신)
 
-```bash
+```
 claude plugin uninstall rekah-unreal@rekah-plugins
 claude plugin install rekah-unreal@rekah-plugins --scope project
 ```
 
 이 명령은 업데이트된 파일을 `marketplaces/`에서 `cache/`로 새 버전과 함께 복사합니다.
 
-### Step 3: Claude Code 재시작
+### Step 3: Claude Code 재시작 안내
 
 ```
 exit
@@ -49,7 +49,7 @@ claude
 
 ```
 ✅ 마켓플레이스 업데이트 완료 (git pull)
-✅ 플러그인 재설치 완료 (예: 0.2.0 → 0.3.0)
+✅ 플러그인 재설치 완료 (예: 0.4.1 → 0.5.0)
 ⚠️  Claude Code를 재시작해주세요 (exit → claude)
 ```
 
@@ -62,8 +62,8 @@ claude
 │       └── .claude-plugin/plugin.json
 │
 └── cache/rekah-plugins/rekah-unreal/   # 런타임용 복사본
-    ├── 0.1.0/  ← .orphaned_at 파일로 비활성화 표시
-    └── 0.2.0/  ← 현재 활성 버전
+    ├── 0.3.0/  ← .orphaned_at 파일로 비활성화 표시
+    └── 0.4.1/  ← 현재 활성 버전
 ```
 
 ## 문제 해결
@@ -71,13 +71,13 @@ claude
 ### 업데이트 후에도 변경사항이 안 보이는 경우
 
 1. 마켓플레이스 버전 확인:
-   ```bash
-   cat ~/.claude/plugins/marketplaces/rekah-plugins/plugins/rekah-unreal/.claude-plugin/plugin.json
+   ```powershell
+   Get-Content "$env:USERPROFILE\.claude\plugins\marketplaces\rekah-plugins\plugins\rekah-unreal\.claude-plugin\plugin.json"
    ```
 
 2. 캐시 버전 확인:
-   ```bash
-   ls ~/.claude/plugins/cache/rekah-plugins/rekah-unreal/
+   ```powershell
+   Get-ChildItem "$env:USERPROFILE\.claude\plugins\cache\rekah-plugins\rekah-unreal"
    ```
 
 3. 세션 재시작 확인
@@ -95,4 +95,4 @@ claude plugin install rekah-unreal@rekah-plugins --scope project
 
 ## 참고 문서
 
-- [plugin-update-guide.md](../../../docs/rekah-plugins/basic_skills/plugin-update-guide.md)
+- [plugin-update-guide.md](../../docs/plugin-update-guide.md)
