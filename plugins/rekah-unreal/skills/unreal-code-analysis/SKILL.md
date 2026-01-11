@@ -4,7 +4,12 @@ description: |
   Unreal Engine C++ 코드 분석 시 clangd LSP를 활용하도록 안내합니다.
   "함수 찾아줘", "정의로 이동", "참조 찾기", "심볼 검색" 등에서 활성화됩니다.
 context: fork
-agent: Explore
+agent: unreal-code-analysis-agent
+allowed-tools:
+  - Bash
+  - Read
+  - Glob
+  - Grep
 ---
 
 # Unreal Code Analysis
