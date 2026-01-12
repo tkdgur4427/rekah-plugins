@@ -1,8 +1,9 @@
-# LSP 활용 가이드
+# MCP LSP 도구 사용 가이드
 
 ## 개요
 
-Unreal Engine C++ 코드 분석 시 grep 대신 clangd LSP를 활용하면 정확한 심볼 탐색이 가능합니다.
+rekah-unreal MCP 서버가 clangd LSP 기능을 직접 제공합니다.
+Claude Code의 내장 LSP Tool 버그를 우회하여 정확한 C++ 코드 분석이 가능합니다.
 
 ## 사전 요구사항
 
@@ -38,90 +39,206 @@ dotnet Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.dll `
 - `Win64`: 플랫폼
 - `Development`: 빌드 구성
 
-### 3. .lsp.json 설정
+## MCP LSP 도구
 
-프로젝트 루트에 `.lsp.json` 파일 생성:
+### 초기화 (필수)
 
-```json
-{
-  "clangd": {
-    "command": "clangd",
-    "args": [
-      "--log=verbose",
-      "--pretty",
-      "--background-index",
-      "--compile-commands-dir=${PROJECT_DIR}",
-      "-j=2",
-      "--background-index-priority=background"
-    ],
-    "extensionToLanguage": {
-      ".cpp": "cpp",
-      ".cc": "cpp",
-      ".h": "cpp",
-      ".hpp": "cpp",
-      ".inl": "cpp"
-    },
-    "startupTimeout": 10000,
-    "restartOnCrash": true,
-    "maxRestarts": 3
-  }
-}
+LSP 기능을 사용하기 전에 반드시 `setup_lsp`를 호출해야 합니다:
+
+```
+setup_lsp(project_dir="D:/BttUnrealEngine")
 ```
 
-## LSP 명령
+**반환:**
+```
+✅ LSP initialized successfully!
+  Project: D:/BttUnrealEngine
+  compile_commands.json: D:\BttUnrealEngine\compile_commands.json
 
-### 1. 정의로 이동 (Go to Definition)
+You can now use LSP tools:
+  - goToDefinition, findReferences, hover
+  - documentSymbol, workspaceSymbol, goToImplementation
+  - prepareCallHierarchy, incomingCalls, outgoingCalls
+```
 
-특정 심볼의 정의를 찾을 때 사용합니다.
+### 상태 확인
 
-**용도:**
-- 함수 구현부 찾기
-- 클래스 정의 찾기
-- 변수 선언 위치 찾기
+```
+lsp_status()
+```
+
+**반환:**
+```
+📊 LSP Status: INITIALIZED
+  Project: D:\BttUnrealEngine
+  clangd running: Yes
+  Open files: 1
+```
+
+---
+
+## P0: 핵심 도구
+
+### 1. goToDefinition - 정의로 이동
+
+심볼의 정의 위치를 찾습니다.
+
+**파라미터:**
+- `file_path`: 소스 파일 절대 경로
+- `line`: 라인 번호 (1-based)
+- `character`: 컬럼 번호 (1-based)
 
 **예시:**
 ```
-GetComponents() 함수의 정의를 찾아줘
-→ LSP의 "go to definition" 사용
+goToDefinition(
+    file_path="D:/BttUnrealEngine/Engine/Source/Runtime/Engine/Classes/GameFramework/Actor.h",
+    line=30,
+    character=10
+)
 ```
 
-### 2. 참조 찾기 (Find References)
+**반환:**
+```
+Definition location(s):
+  D:/BttUnrealEngine/Engine/Source/Runtime/Engine/Classes/GameFramework/Actor.h:256:7
+```
 
-특정 심볼이 사용되는 모든 위치를 찾습니다.
+### 2. findReferences - 참조 찾기
 
-**용도:**
-- 함수 호출 위치 찾기
-- 변수 사용 위치 찾기
-- 리팩토링 영향 범위 파악
+심볼이 사용되는 모든 위치를 찾습니다.
+
+**파라미터:**
+- `file_path`: 소스 파일 절대 경로
+- `line`: 라인 번호 (1-based)
+- `character`: 컬럼 번호 (1-based)
+- `include_declaration`: 선언부 포함 여부 (기본값: true)
 
 **예시:**
 ```
-GetComponents() 함수가 어디서 호출되는지 찾아줘
-→ LSP의 "find references" 사용
+findReferences(
+    file_path="D:/BttUnrealEngine/Engine/Source/Runtime/Engine/Classes/GameFramework/Actor.h",
+    line=256,
+    character=10,
+    include_declaration=true
+)
 ```
 
-### 3. 심볼 검색 (Workspace Symbol)
+### 3. hover - 호버 정보
+
+심볼의 타입과 문서화 정보를 가져옵니다.
+
+**파라미터:**
+- `file_path`: 소스 파일 절대 경로
+- `line`: 라인 번호 (1-based)
+- `character`: 컬럼 번호 (1-based)
+
+**예시:**
+```
+hover(
+    file_path="D:/BttUnrealEngine/Engine/Source/Runtime/Engine/Classes/GameFramework/Actor.h",
+    line=30,
+    character=10
+)
+```
+
+**반환:**
+```
+Hover information:
+class AActor
+
+Size: 1136 bytes
+Actor is the base class for an Object that can be placed or spawned in a level.
+...
+```
+
+---
+
+## P1: 확장 도구
+
+### 4. documentSymbol - 문서 심볼
+
+파일 내 모든 심볼(클래스, 함수, 변수 등)을 가져옵니다.
+
+**파라미터:**
+- `file_path`: 소스 파일 절대 경로
+
+**예시:**
+```
+documentSymbol(file_path="D:/BttUnrealEngine/Engine/Source/Runtime/Engine/Classes/GameFramework/Actor.h")
+```
+
+**반환:**
+```
+Symbols in Actor.h:
+Class: AActor (line 30)
+Class: AController (line 31)
+...
+```
+
+### 5. workspaceSymbol - 워크스페이스 심볼
 
 프로젝트 전체에서 심볼을 검색합니다.
 
-**용도:**
-- 클래스/함수명으로 검색
-- 부분 일치 검색
-- 프로젝트 전체 탐색
+**파라미터:**
+- `query`: 검색할 심볼 이름 (부분 일치 지원)
 
 **예시:**
 ```
-Actor로 시작하는 클래스들을 찾아줘
-→ LSP의 "workspace symbol" 사용
+workspaceSymbol(query="AActor")
+workspaceSymbol(query="BeginPlay")
+workspaceSymbol(query="GetComponents")
 ```
 
-## grep vs LSP 선택 기준
+### 6. goToImplementation - 구현체 찾기
+
+인터페이스나 추상 메서드의 구현체를 찾습니다.
+
+**파라미터:**
+- `file_path`: 소스 파일 절대 경로
+- `line`: 라인 번호 (1-based)
+- `character`: 컬럼 번호 (1-based)
+
+---
+
+## P2: 호출 계층 도구
+
+### 7. incomingCalls - 호출자 찾기
+
+특정 함수를 호출하는 모든 함수를 찾습니다.
+
+**파라미터:**
+- `file_path`: 소스 파일 절대 경로
+- `line`: 라인 번호 (1-based)
+- `character`: 컬럼 번호 (1-based)
+
+**예시:**
+```
+incomingCalls(
+    file_path="D:/BttUnrealEngine/Engine/Source/Runtime/Engine/Classes/GameFramework/Actor.h",
+    line=2128,
+    character=10
+)
+```
+
+### 8. outgoingCalls - 피호출자 찾기
+
+특정 함수가 호출하는 모든 함수를 찾습니다.
+
+**파라미터:**
+- `file_path`: 소스 파일 절대 경로
+- `line`: 라인 번호 (1-based)
+- `character`: 컬럼 번호 (1-based)
+
+---
+
+## grep vs MCP LSP 선택 기준
 
 | 상황 | 권장 방식 | 이유 |
 |------|-----------|------|
-| 특정 클래스/함수 정의 찾기 | **LSP** | 정확한 심볼 매칭 |
-| 함수가 호출되는 모든 위치 | **LSP** | 컨텍스트 인식 |
-| 상속/구현 관계 파악 | **LSP** | 타입 시스템 이해 |
+| 특정 클래스/함수 정의 찾기 | **MCP LSP** | 정확한 심볼 매칭 |
+| 함수가 호출되는 모든 위치 | **MCP LSP** | 컨텍스트 인식 |
+| 상속/구현 관계 파악 | **MCP LSP** | 타입 시스템 이해 |
+| 호출 계층 분석 | **MCP LSP** | 정확한 호출 그래프 |
 | 단순 문자열 패턴 검색 | grep | 빠른 검색 |
 | 주석/문서 내용 검색 | grep | LSP는 코드만 분석 |
 | 파일명 패턴으로 찾기 | Glob | 파일 시스템 검색 |
@@ -132,49 +249,39 @@ Actor로 시작하는 클래스들을 찾아줘
 
 Unreal Engine처럼 대규모 프로젝트에서는:
 
-1. **초기 인덱싱 시간**: 첫 실행 시 인덱싱에 시간 소요
-2. **백그라운드 인덱싱**: `--background-index` 옵션으로 점진적 인덱싱
-3. **메모리 사용량**: 대규모 프로젝트에서는 메모리 사용량 증가
+1. **초기 인덱싱 시간**: 첫 파일 열 때 인덱싱에 시간 소요 (0.3~1초)
+2. **후속 응답**: 인덱싱 후 즉시 응답
+3. **메모리 사용량**: clangd가 백그라운드에서 실행됨
 
-### 최적화 팁
+### 정확도
 
-```json
-{
-  "clangd": {
-    "args": [
-      "-j=2",                              // 병렬 작업 제한
-      "--background-index-priority=background",  // 백그라운드 우선순위
-      "--pch-storage=memory",             // PCH 메모리 저장
-      "--limit-results=100"               // 결과 수 제한
-    ]
-  }
-}
-```
+| 방식 | 정확도 |
+|------|--------|
+| MCP LSP | ~99% |
+| grep 패턴 | ~70% |
 
 ## 문제 해결
 
-### compile_commands.json 오류
+### LSP 초기화 안 됨
 
-```powershell
-# 파일 존재 확인
-Test-Path compile_commands.json
-
-# 파일 크기 확인
-(Get-Item compile_commands.json).Length / 1MB
+```
+⚠️ LSP not initialized!
+Please call 'setup_lsp' tool first with your Unreal Engine project directory.
+Example: setup_lsp(project_dir="D:/MyUnrealProject")
 ```
 
-### clangd 연결 실패
+**해결:** `setup_lsp` 호출
 
-```powershell
-# clangd 버전 확인
-clangd --version
+### compile_commands.json 없음
 
-# clangd 직접 실행 테스트
-clangd --check=Engine/Source/Runtime/Engine/Public/Engine.h
-```
+**해결:** UnrealBuildTool로 생성 (위 섹션 참조)
+
+### clangd 없음
+
+**해결:** LLVM 설치 (`choco install llvm` 또는 `winget install LLVM.LLVM`)
 
 ### 심볼 못 찾음
 
 1. `compile_commands.json` 재생성
-2. clangd 재시작
-3. 인덱싱 완료 대기
+2. 새 세션 시작 (MCP 서버 재시작)
+3. `setup_lsp` 다시 호출

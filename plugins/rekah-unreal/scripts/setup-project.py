@@ -11,9 +11,153 @@ import sys
 from pathlib import Path
 
 
+def run_claude_command(args: list) -> tuple[bool, str]:
+    """
+    Run a claude CLI command.
+
+    Args:
+        args: Command arguments (without 'claude' prefix)
+
+    Returns:
+        Tuple of (success, output)
+    """
+    try:
+        result = subprocess.run(
+            ["claude"] + args,
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+        output = result.stdout + result.stderr
+        return result.returncode == 0, output.strip()
+    except FileNotFoundError:
+        return False, "claude CLI not found"
+    except subprocess.TimeoutExpired:
+        return False, "Command timed out"
+    except Exception as e:
+        return False, str(e)
+
+
+def get_installed_marketplaces() -> set:
+    """
+    Get list of currently installed marketplaces using CLI.
+
+    Returns:
+        Set of marketplace names
+    """
+    success, output = run_claude_command(["plugin", "marketplace", "list"])
+    if not success:
+        return set()
+
+    # Parse output like:
+    #   ❯ rekah-plugins
+    #     Source: GitHub (tkdgur4427/rekah-plugins)
+    marketplaces = set()
+    for line in output.split('\n'):
+        line = line.strip()
+        if line.startswith('❯ '):
+            name = line[2:].strip()
+            marketplaces.add(name)
+    return marketplaces
+
+
+def add_marketplace(name: str, repo: str) -> bool:
+    """
+    Add a marketplace using claude CLI.
+
+    Args:
+        name: Marketplace name (for logging)
+        repo: GitHub repo in owner/repo format
+
+    Returns:
+        True if successful or already exists
+    """
+    # Check if already installed
+    installed = get_installed_marketplaces()
+    if name in installed:
+        print(f"[rekah-unreal] Marketplace already installed: {name}")
+        return True
+
+    # Add marketplace
+    print(f"[rekah-unreal] Adding marketplace: {name} ({repo})")
+    success, output = run_claude_command(["plugin", "marketplace", "add", repo])
+
+    if success:
+        print(f"[rekah-unreal] Successfully added marketplace: {name}")
+        return True
+    else:
+        # Check if it's already added (might have been added by another process)
+        if "already" in output.lower() or name in get_installed_marketplaces():
+            print(f"[rekah-unreal] Marketplace already exists: {name}")
+            return True
+        print(f"[rekah-unreal] Failed to add marketplace {name}: {output}")
+        return False
+
+
+def install_plugin(plugin: str) -> bool:
+    """
+    Install a plugin using claude CLI.
+
+    Args:
+        plugin: Plugin name in plugin@marketplace format
+
+    Returns:
+        True if successful or already installed
+    """
+    print(f"[rekah-unreal] Installing plugin: {plugin}")
+    success, output = run_claude_command(["plugin", "install", plugin])
+
+    if success:
+        print(f"[rekah-unreal] Successfully installed plugin: {plugin}")
+        return True
+    else:
+        # Check if already installed
+        if "already" in output.lower():
+            print(f"[rekah-unreal] Plugin already installed: {plugin}")
+            return True
+        print(f"[rekah-unreal] Failed to install plugin {plugin}: {output}")
+        return False
+
+
+def setup_marketplaces_and_plugins() -> bool:
+    """
+    Setup required marketplaces and plugins using claude CLI.
+
+    Returns:
+        True if all successful, False otherwise
+    """
+    # Marketplaces to register (name -> GitHub repo)
+    marketplaces = {
+        "rekah-plugins": "tkdgur4427/rekah-plugins",
+        "claude-plugins-official": "anthropics/claude-plugins-official"
+    }
+
+    # Plugins to install (in plugin@marketplace format)
+    # Note: clangd-lsp 플러그인은 제거됨 - rekah-unreal MCP 서버가 LSP 기능 직접 제공
+    plugins = [
+        "rekah-unreal@rekah-plugins"
+    ]
+
+    all_success = True
+
+    # Add marketplaces
+    for name, repo in marketplaces.items():
+        if not add_marketplace(name, repo):
+            all_success = False
+
+    # Install plugins
+    for plugin in plugins:
+        if not install_plugin(plugin):
+            all_success = False
+
+    return all_success
+
+
 def merge_settings(project_dir: str) -> bool:
     """
     Merge rekah-unreal plugin settings into .claude/settings.json.
+    Now primarily handles project-level settings, as marketplace/plugin
+    installation is done via CLI.
 
     Args:
         project_dir: The project directory path
@@ -24,22 +168,10 @@ def merge_settings(project_dir: str) -> bool:
     claude_dir = Path(project_dir) / ".claude"
     settings_file = claude_dir / "settings.json"
 
-    # Extra marketplaces to register (project-level)
-    # This allows the project to use plugins from these marketplaces
-    extra_marketplaces = {
-        "rekah-plugins": {
-            "source": {
-                "source": "github",
-                "repo": "tkdgur4427/rekah-plugins"
-            }
-        }
-        # Note: claude-plugins-official is a built-in marketplace, no need to add
-    }
-
-    # Plugin settings to add
+    # Plugin settings to add to project settings
+    # Note: clangd-lsp 플러그인은 제거됨 - rekah-unreal MCP 서버가 LSP 기능 직접 제공
     plugin_settings = {
-        "rekah-unreal@rekah-plugins": True,
-        "clangd-lsp@claude-plugins-official": True  # LSP support for C++
+        "rekah-unreal@rekah-plugins": True
     }
 
     try:
@@ -57,18 +189,6 @@ def merge_settings(project_dir: str) -> bool:
 
         updated = False
 
-        # Ensure extraKnownMarketplaces section exists and add marketplaces
-        if "extraKnownMarketplaces" not in settings:
-            settings["extraKnownMarketplaces"] = {}
-
-        for marketplace, config in extra_marketplaces.items():
-            if marketplace not in settings["extraKnownMarketplaces"]:
-                settings["extraKnownMarketplaces"][marketplace] = config
-                print(f"[rekah-unreal] Added marketplace: {marketplace}")
-                updated = True
-            else:
-                print(f"[rekah-unreal] Marketplace already configured: {marketplace}")
-
         # Ensure enabledPlugins section exists
         if "enabledPlugins" not in settings:
             settings["enabledPlugins"] = {}
@@ -77,10 +197,10 @@ def merge_settings(project_dir: str) -> bool:
         for plugin, enabled in plugin_settings.items():
             if plugin not in settings["enabledPlugins"]:
                 settings["enabledPlugins"][plugin] = enabled
-                print(f"[rekah-unreal] Added plugin: {plugin} = {enabled}")
+                print(f"[rekah-unreal] Added plugin to project settings: {plugin} = {enabled}")
                 updated = True
             else:
-                print(f"[rekah-unreal] Plugin already configured: {plugin}")
+                print(f"[rekah-unreal] Plugin already in project settings: {plugin}")
 
         # Save if updated
         if updated:
@@ -267,7 +387,10 @@ def main():
     # Check if this is an Unreal project
     is_unreal = is_unreal_project(project_dir)
 
-    # Always merge settings (plugin activation)
+    # Setup marketplaces and plugins via CLI (user-level)
+    marketplace_ok = setup_marketplaces_and_plugins()
+
+    # Merge project-level settings
     settings_ok = merge_settings(project_dir)
 
     # Only setup LSP config for Unreal projects
@@ -277,12 +400,14 @@ def main():
         clangd_ok = check_clangd()
 
         print(f"[rekah-unreal] Setup complete:")
+        print(f"[rekah-unreal]   - marketplaces: {'OK' if marketplace_ok else 'PARTIAL'}")
         print(f"[rekah-unreal]   - settings.json: {'OK' if settings_ok else 'FAILED'}")
         print(f"[rekah-unreal]   - .lsp.json: {'OK' if lsp_ok else 'FAILED'}")
         print(f"[rekah-unreal]   - compile_commands.json: {'OK' if compile_ok else 'NOT FOUND'}")
         print(f"[rekah-unreal]   - clangd: {'OK' if clangd_ok else 'NOT FOUND'}")
     else:
         print(f"[rekah-unreal] Setup complete:")
+        print(f"[rekah-unreal]   - marketplaces: {'OK' if marketplace_ok else 'PARTIAL'}")
         print(f"[rekah-unreal]   - settings.json: {'OK' if settings_ok else 'FAILED'}")
         print(f"[rekah-unreal]   - LSP setup: SKIPPED (not Unreal project)")
 
