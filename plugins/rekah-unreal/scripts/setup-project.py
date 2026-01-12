@@ -28,7 +28,10 @@ def run_claude_command(args: list) -> tuple[bool, str]:
             text=True,
             timeout=60
         )
-        output = result.stdout + result.stderr
+        # Handle None values - can occur on Windows or when process is interrupted
+        stdout = result.stdout or ""
+        stderr = result.stderr or ""
+        output = stdout + stderr
         return result.returncode == 0, output.strip()
     except FileNotFoundError:
         return False, "claude CLI not found"
