@@ -43,12 +43,57 @@ LSP 도구들(`goToDefinition`, `findReferences`, `goToImplementation`, `incomin
 
 ```
 // Actor.h 라인 3059
-public: virtual void Tick(float DeltaSeconds);
-        ^^^^^^^      ^^^^
-        |            |
-        |            +-- character=15 (정확한 위치) → 20개 구현체 발견!
-        +-------------- character=1 (잘못된 위치) → "No implementations found"
+	ENGINE_API virtual void Tick(float DeltaSeconds);
+^                         ^^^^
+|                         |
+|                         +-- character=26 (정확한 위치) → 20개 구현체 발견!
++-------------------------- character=1 (잘못된 위치) → "No implementations found"
 ```
+
+---
+
+## ⭐ Character 위치 계산법 (1-based)
+
+Unreal Engine 헤더에서 가장 흔한 함수 선언 패턴:
+
+```cpp
+	ENGINE_API virtual void FunctionName(...);
+^                         ^
+1                         26
+(탭)                      (함수명 시작)
+```
+
+### 계산 공식
+
+| 구성 요소 | 길이 | 누적 위치 |
+|-----------|------|-----------|
+| 탭 (`\t`) | 1 | 1 |
+| `ENGINE_API` | 10 | 2-11 |
+| 공백 | 1 | 12 |
+| `virtual` | 7 | 13-19 |
+| 공백 | 1 | 20 |
+| `void` | 4 | 21-24 |
+| 공백 | 1 | 25 |
+| **함수명 시작** | - | **26** |
+
+### 검증된 테스트 결과 (2026-01-13)
+
+| 함수 | Line | Character | 발견된 구현체 |
+|------|------|-----------|---------------|
+| `AActor::Tick` | 3059 | **26** | ✅ 20개 |
+| `AActor::BeginPlay` | 2128 | **26** | ✅ 22개 |
+| `AActor::EndPlay` | 2135 | **26** | ✅ 20개 |
+| `AActor::GetLifetimeReplicatedProps` | 273 | **26** | ✅ 21개 |
+
+### 빠른 참조: 흔한 패턴의 Character 위치
+
+| 패턴 | 함수명 시작 Character |
+|------|----------------------|
+| `\tENGINE_API virtual void Func()` | **26** |
+| `\tENGINE_API void Func()` | **18** |
+| `\tvirtual void Func()` | **15** |
+| `\tvoid Func()` | **7** |
+| `\tstatic void Func()` | **13** |
 
 ### 올바른 사용법
 
@@ -58,20 +103,24 @@ workspaceSymbol(query="AActor::Tick")
 → Method: Tick - Actor.h:3059
 ```
 
-**2단계: 파일을 읽어서 정확한 컬럼 확인**
+**2단계: 파일을 읽어서 라인 내용 확인**
 ```
 Read(file_path="Actor.h", offset=3055, limit=10)
-→ 3059: public: virtual void Tick(float DeltaSeconds);
-                             ^^^^
-                             character=15에서 "Tick" 시작
+→ 3059: 	ENGINE_API virtual void Tick(float DeltaSeconds);
 ```
 
-**3단계: 정확한 위치로 LSP 도구 호출**
+**3단계: Character 위치 계산**
+```
+탭(1) + ENGINE_API(10) + 공백(1) + virtual(7) + 공백(1) + void(4) + 공백(1) = 25
+→ 함수명 "Tick"은 character=26에서 시작
+```
+
+**4단계: 정확한 위치로 LSP 도구 호출**
 ```
 goToImplementation(
-    file_path="Actor.h",
+    file_path="D:/BttUnrealEngine/Engine/Source/Runtime/Engine/Classes/GameFramework/Actor.h",
     line=3059,
-    character=15  ← 심볼 시작 위치!
+    character=26  ← 심볼 시작 위치!
 )
 → 20개 구현체 발견
 ```
@@ -81,8 +130,9 @@ goToImplementation(
 | 단계 | 도구 | 목적 |
 |------|------|------|
 | 1 | `workspaceSymbol` | 심볼 이름으로 대략적인 위치 찾기 |
-| 2 | `Read` | 파일을 읽어 정확한 컬럼 위치 확인 |
-| 3 | `goToDefinition` / `findReferences` / etc. | 정확한 위치로 상세 분석 |
+| 2 | `Read` | 파일을 읽어 라인 내용 확인 |
+| 3 | **Character 계산** | 탭, 키워드, 공백을 세어 함수명 시작 위치 계산 |
+| 4 | `goToDefinition` / `findReferences` / etc. | 정확한 위치로 상세 분석 |
 
 ---
 
@@ -170,7 +220,7 @@ Symbols matching 'BeginPlay' (37 found):
 goToDefinition(
     file_path="D:/BttUnrealEngine/Engine/Source/Runtime/Engine/Classes/GameFramework/Actor.h",
     line=3059,
-    character=15
+    character=26
 )
 ```
 
@@ -244,7 +294,7 @@ Class: AActor (line 256)
 goToImplementation(
     file_path="D:/BttUnrealEngine/Engine/Source/Runtime/Engine/Classes/GameFramework/Actor.h",
     line=3059,
-    character=15
+    character=26
 )
 ```
 
@@ -263,7 +313,7 @@ Implementations (20 found):
 incomingCalls(
     file_path="D:/BttUnrealEngine/Engine/Source/Runtime/Engine/Classes/GameFramework/Actor.h",
     line=2128,
-    character=15
+    character=26
 )
 ```
 
@@ -281,7 +331,7 @@ Incoming calls (1 caller):
 outgoingCalls(
     file_path="D:/BttUnrealEngine/Engine/Source/Runtime/Engine/Private/Actor.cpp",
     line=4753,
-    character=15
+    character=13
 )
 ```
 
