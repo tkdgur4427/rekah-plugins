@@ -24,6 +24,18 @@ def merge_settings(project_dir: str) -> bool:
     claude_dir = Path(project_dir) / ".claude"
     settings_file = claude_dir / "settings.json"
 
+    # Extra marketplaces to register (project-level)
+    # This allows the project to use plugins from these marketplaces
+    extra_marketplaces = {
+        "rekah-plugins": {
+            "source": {
+                "source": "github",
+                "repo": "tkdgur4427/rekah-plugins"
+            }
+        }
+        # Note: claude-plugins-official is a built-in marketplace, no need to add
+    }
+
     # Plugin settings to add
     plugin_settings = {
         "rekah-unreal@rekah-plugins": True,
@@ -43,12 +55,25 @@ def merge_settings(project_dir: str) -> bool:
             settings = {}
             print(f"[rekah-unreal] Creating new settings.json")
 
+        updated = False
+
+        # Ensure extraKnownMarketplaces section exists and add marketplaces
+        if "extraKnownMarketplaces" not in settings:
+            settings["extraKnownMarketplaces"] = {}
+
+        for marketplace, config in extra_marketplaces.items():
+            if marketplace not in settings["extraKnownMarketplaces"]:
+                settings["extraKnownMarketplaces"][marketplace] = config
+                print(f"[rekah-unreal] Added marketplace: {marketplace}")
+                updated = True
+            else:
+                print(f"[rekah-unreal] Marketplace already configured: {marketplace}")
+
         # Ensure enabledPlugins section exists
         if "enabledPlugins" not in settings:
             settings["enabledPlugins"] = {}
 
         # Merge plugin settings (only add if not already set)
-        updated = False
         for plugin, enabled in plugin_settings.items():
             if plugin not in settings["enabledPlugins"]:
                 settings["enabledPlugins"][plugin] = enabled
