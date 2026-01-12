@@ -26,7 +26,8 @@ def merge_settings(project_dir: str) -> bool:
 
     # Plugin settings to add
     plugin_settings = {
-        "rekah-unreal@rekah-plugins": True
+        "rekah-unreal@rekah-plugins": True,
+        "clangd-lsp@claude-plugins-official": True  # LSP support for C++
     }
 
     try:
