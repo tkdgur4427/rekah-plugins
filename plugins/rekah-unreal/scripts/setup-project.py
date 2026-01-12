@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Setup Claude Code project settings for rekah-unreal plugin.
-Extends setup-settings.py with LSP configuration and environment checks.
+Checks environment prerequisites (compile_commands.json, clangd) for MCP LSP.
 """
 
 import json
@@ -133,7 +133,6 @@ def setup_marketplaces_and_plugins() -> bool:
     }
 
     # Plugins to install (in plugin@marketplace format)
-    # Note: clangd-lsp 플러그인은 제거됨 - rekah-unreal MCP 서버가 LSP 기능 직접 제공
     plugins = [
         "rekah-unreal@rekah-plugins"
     ]
@@ -169,7 +168,6 @@ def merge_settings(project_dir: str) -> bool:
     settings_file = claude_dir / "settings.json"
 
     # Plugin settings to add to project settings
-    # Note: clangd-lsp 플러그인은 제거됨 - rekah-unreal MCP 서버가 LSP 기능 직접 제공
     plugin_settings = {
         "rekah-unreal@rekah-plugins": True
     }
@@ -214,59 +212,6 @@ def merge_settings(project_dir: str) -> bool:
 
     except Exception as e:
         print(f"[rekah-unreal] Error: {e}", file=sys.stderr)
-        return False
-
-
-def setup_lsp_config(project_dir: str) -> bool:
-    """
-    Create .lsp.json file for clangd LSP configuration.
-
-    Args:
-        project_dir: The project directory path
-
-    Returns:
-        True if successful, False otherwise
-    """
-    lsp_file = Path(project_dir) / ".lsp.json"
-
-    # LSP configuration template
-    lsp_config = {
-        "clangd": {
-            "command": "clangd",
-            "args": [
-                "--log=verbose",
-                "--pretty",
-                "--background-index",
-                f"--compile-commands-dir={project_dir}",
-                "-j=2",
-                "--background-index-priority=background"
-            ],
-            "extensionToLanguage": {
-                ".cpp": "cpp",
-                ".cc": "cpp",
-                ".h": "cpp",
-                ".hpp": "cpp",
-                ".inl": "cpp"
-            },
-            "startupTimeout": 10000,
-            "restartOnCrash": True,
-            "maxRestarts": 3
-        }
-    }
-
-    try:
-        # Only create if not exists (preserve existing config)
-        if lsp_file.exists():
-            print(f"[rekah-unreal] .lsp.json already exists, skipping")
-            return True
-
-        with open(lsp_file, "w", encoding="utf-8") as f:
-            json.dump(lsp_config, f, indent=2, ensure_ascii=False)
-        print(f"[rekah-unreal] Created .lsp.json at {lsp_file}")
-        return True
-
-    except Exception as e:
-        print(f"[rekah-unreal] Error creating .lsp.json: {e}", file=sys.stderr)
         return False
 
 
@@ -393,23 +338,20 @@ def main():
     # Merge project-level settings
     settings_ok = merge_settings(project_dir)
 
-    # Only setup LSP config for Unreal projects
+    # Check LSP prerequisites for Unreal projects
     if is_unreal:
-        lsp_ok = setup_lsp_config(project_dir)
         compile_ok = check_compile_commands(project_dir)
         clangd_ok = check_clangd()
 
         print(f"[rekah-unreal] Setup complete:")
         print(f"[rekah-unreal]   - marketplaces: {'OK' if marketplace_ok else 'PARTIAL'}")
         print(f"[rekah-unreal]   - settings.json: {'OK' if settings_ok else 'FAILED'}")
-        print(f"[rekah-unreal]   - .lsp.json: {'OK' if lsp_ok else 'FAILED'}")
         print(f"[rekah-unreal]   - compile_commands.json: {'OK' if compile_ok else 'NOT FOUND'}")
         print(f"[rekah-unreal]   - clangd: {'OK' if clangd_ok else 'NOT FOUND'}")
     else:
         print(f"[rekah-unreal] Setup complete:")
         print(f"[rekah-unreal]   - marketplaces: {'OK' if marketplace_ok else 'PARTIAL'}")
         print(f"[rekah-unreal]   - settings.json: {'OK' if settings_ok else 'FAILED'}")
-        print(f"[rekah-unreal]   - LSP setup: SKIPPED (not Unreal project)")
 
     sys.exit(0 if settings_ok else 1)
 

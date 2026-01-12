@@ -9,7 +9,7 @@ echo "[rekah-unreal] Project dir: ${CLAUDE_PROJECT_DIR}"
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Setup project using Python (settings.json, .lsp.json, etc.)
+# Setup project using Python (settings.json, environment checks)
 if command -v python3 &> /dev/null; then
     python3 "${SCRIPT_DIR}/setup-project.py"
 elif command -v python &> /dev/null; then

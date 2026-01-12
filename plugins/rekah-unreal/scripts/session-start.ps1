@@ -8,7 +8,7 @@ Write-Host "[rekah-unreal] Project dir: $env:CLAUDE_PROJECT_DIR"
 # Get the directory where this script is located
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-# Setup project using Python (settings.json, .lsp.json, clangd-lsp plugin, etc.)
+# Setup project using Python (settings.json, environment checks)
 $SetupScript = Join-Path $ScriptDir "setup-project.py"
 
 if (Get-Command python -ErrorAction SilentlyContinue) {
