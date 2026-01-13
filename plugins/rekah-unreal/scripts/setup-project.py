@@ -107,8 +107,8 @@ def install_plugin(plugin: str) -> bool:
     Returns:
         True if successful or already installed
     """
-    print(f"[rekah-unreal] Installing plugin: {plugin}")
-    success, output = run_claude_command(["plugin", "install", plugin])
+    print(f"[rekah-unreal] Installing plugin: {plugin} (project scope)")
+    success, output = run_claude_command(["plugin", "install", plugin, "--scope", "project"])
 
     if success:
         print(f"[rekah-unreal] Successfully installed plugin: {plugin}")
