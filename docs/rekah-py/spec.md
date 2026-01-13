@@ -77,12 +77,13 @@ description: Python/UV 기반 코드 작성 가이드라인
 - `load_config_ini()` - config.ini 로드
 - `get_config_value(section, key)` - 설정값 조회
 
-## 구현 순서
+## 구현 상태
 
-1. `plugins/rekah-py/.claude-plugin/plugin.json` 생성
-2. `plugins/rekah-py/skills/python-coding/SKILL.md` 생성
-3. `plugins/rekah-py/skills/python-coding/REFERENCE.md` 생성
-4. 테스트: 새 세션에서 플러그인 로드 확인
+- [x] `plugins/rekah-py/.claude-plugin/plugin.json` 생성
+- [x] `plugins/rekah-py/skills/python-coding/SKILL.md` 생성
+- [x] `plugins/rekah-py/skills/python-coding/REFERENCE.md` 생성
+- [x] `setup-project.py`에서 is_unreal 분기 처리 추가
+- [x] 테스트: 새 세션에서 플러그인 로드 확인
 
 ## 확장 계획
 
