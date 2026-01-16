@@ -11,6 +11,11 @@
       "name": "rekah-unreal",
       "source": "./plugins/rekah-unreal",
       "description": "Unreal Engine 개발을 위한 Claude Code 플러그인"
+    },
+    {
+      "name": "rekah-py",
+      "source": "./plugins/rekah-py",
+      "description": "Python/UV 기반 개발을 위한 Claude Code 플러그인"
     }
   ]
 }
