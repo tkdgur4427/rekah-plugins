@@ -20,7 +20,7 @@ description: Python/UV 기반 코드 작성 가이드라인
 ## 테스트 코드
 - 위치: `./tests/test_{파일이름}.py`
 - 함수 단위로 구현
-- pytest 기반이 아닌 native 구현
+- pytest + pytest-asyncio 기반
 - 임시 파일/디렉토리는 `./intermediates/` 하위에 생성
 - `tempfile.mkdtemp()` 사용 금지 (프로젝트 외부 경로 문제)
 
