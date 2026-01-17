@@ -1,0 +1,13 @@
+#include "${ModuleName}.h"
+
+IMPLEMENT_MODULE(F${ModuleName}Module, ${ModuleName});
+
+void F${ModuleName}Module::StartupModule()
+{
+	UE_LOG(LogTemp, Log, TEXT("F${ModuleName}Module: Started"));
+}
+
+void F${ModuleName}Module::ShutdownModule()
+{
+	UE_LOG(LogTemp, Log, TEXT("F${ModuleName}Module: Shutdown"));
+}

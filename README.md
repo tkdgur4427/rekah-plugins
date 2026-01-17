@@ -5,11 +5,15 @@ Rekah 개발 도구 플러그인 마켓플레이스
 ## 설치
 
 ```bash
+# 만약, claude code 실행 중이라면, 'claude plugin' 대신 '/plugin'
 # 마켓플레이스 추가
-claude plugin marketplace add github:tkdgur4427/rekah-plugins
+claude plugin marketplace add tkdgur4427/rekah-plugins
 
 # 플러그인 설치
+# 1. unreal engine
 claude plugin install rekah-unreal@rekah-plugins --scope project
+# 2. python 
+claude plugin install rekah-py@rekah-plugins --scope project
 ```
 
 ## 플러그인 목록
