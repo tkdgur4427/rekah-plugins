@@ -93,6 +93,11 @@ Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\plugins\marketplaces\rekah
 claude plugin install rekah-unreal@rekah-plugins --scope project
 ```
 
+## MCP 서버
+
+> MCP 서버는 플러그인에 내장되어 있으므로 플러그인 업데이트 시 함께 업데이트됩니다.
+> 첫 실행 시 `uv sync`로 의존성이 자동 설치됩니다.
+
 ## 참고 문서
 
 - [plugin-update-guide.md](../../docs/plugin-update-guide.md)

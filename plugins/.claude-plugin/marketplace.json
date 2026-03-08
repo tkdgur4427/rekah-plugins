@@ -1,0 +1,16 @@
+{
+  "name": "rekah-plugins-marketplace",
+  "owner": { "name": "rekah" },
+  "plugins": [
+    {
+      "name": "rekah-unreal",
+      "source": "./rekah-unreal",
+      "description": "Unreal Engine 개발을 위한 Claude Code 플러그인"
+    },
+    {
+      "name": "rekah-py",
+      "source": "./rekah-py",
+      "description": "Python 개발을 위한 Claude Code 플러그인"
+    }
+  ]
+}

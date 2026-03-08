@@ -1,28 +1,16 @@
 {
   "name": "rekah-unreal",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Unreal Engine 개발을 위한 Claude Code 플러그인",
   "author": {
     "name": "Haker"
   },
   "repository": "https://github.com/tkdgur4427/rekah-plugins",
+  "keywords": ["unreal", "cpp", "gamedev", "lsp", "clangd"],
   "mcpServers": {
     "rekah-unreal": {
-      "command": "uvx",
-      "args": ["--from", "git+https://github.com/tkdgur4427/rekah-unreal-mcp.git", "rekah-mcp"]
+      "command": "uv",
+      "args": ["--directory", "${CLAUDE_PLUGIN_ROOT}/mcp-server", "run", "rekah-mcp"]
     }
-  },
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PLUGIN_ROOT}/scripts/session-start.ps1\"",
-            "timeout": 30
-          }
-        ]
-      }
-    ]
   }
 }

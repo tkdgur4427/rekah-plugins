@@ -5,6 +5,15 @@ Write-Host "[rekah-unreal] SessionStart hook triggered"
 Write-Host "[rekah-unreal] Plugin root: $env:CLAUDE_PLUGIN_ROOT"
 Write-Host "[rekah-unreal] Project dir: $env:CLAUDE_PROJECT_DIR"
 
+# MCP server dependency check
+$McpServerDir = Join-Path $env:CLAUDE_PLUGIN_ROOT "mcp-server"
+$VenvDir = Join-Path $McpServerDir ".venv"
+
+if (-not (Test-Path $VenvDir)) {
+    Write-Host "[rekah-unreal] First run: installing MCP server dependencies..."
+    uv --directory $McpServerDir sync
+}
+
 # Get the directory where this script is located
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 

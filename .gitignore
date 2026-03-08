@@ -3,3 +3,9 @@ tmpclaude-*
 
 # Claude settings (project-specific)
 .claude/
+
+# MCP server runtime
+**/mcp-server/logs/
+**/mcp-server/intermediates/
+**/mcp-server/.venv/
+**/mcp-server/config.ini
